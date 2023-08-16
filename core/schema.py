@@ -27,6 +27,17 @@ class CreateBookMutation(graphene.Mutation):
         book = Book(title=title, description=description, price=price, author=author)
         book.save()
         return CreateBookMutation(book=book)
+    
+class DeleteBookMutation(graphene.Mutation):
+    class Arguments:
+        id = graphene.ID(required=True)
+
+    message = graphene.String()
+
+    def mutate(self, info, id):
+        book = Book.objects.get(pk=id)
+        book.delete()
+        return DeleteBookMutation(message="Book deleted successfully!")
 
 class Query(graphene.ObjectType):
     hello = graphene.String(default_value="Hi!")
@@ -48,7 +59,8 @@ class Query(graphene.ObjectType):
         return f'{self}' """
     
 class Mutation(graphene.ObjectType):
-    create_book = CreateBookMutation.Field()       
+    create_book = CreateBookMutation.Field()
+    delete_book = DeleteBookMutation.Field()
     create_author = graphene.Field(AuthorType, first_name=graphene.String(), last_name=graphene.String())
 
-schema = graphene.Schema(query=Query)
+schema = graphene.Schema(query=Query, mutation=Mutation)
